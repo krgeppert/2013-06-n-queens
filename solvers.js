@@ -26,7 +26,7 @@ var makeBoard = function(n){
   for (var i = 0; i < n; i++){
     solution.push([]);
     for (var j = 0; j < n; j++){
-      solution[i].push(new Spot());
+      solution[i].push(true);
     }
   }
   return solution;
@@ -35,39 +35,51 @@ var plantAQueen = function(cords,solution){
   i = cords[0];
   j = cords[1];
   n = solution.length;
-    if (solution[i][j].canHold) {
-      solution[i][j].hasQueen = true;
+    if (solution[i][j] !== undefined) {
+      solution[i][j] = 0;
       for (var s = 0; s < n; s++){
-        solution[s][j].canHold = false;
+        if (solution[s][j] !== 0){
+          solution[s][j] = false;
+        }
       }
       for (var t = 0; t < n; t++){
-        solution[i][t].canHold = false;
+        if (solution[i][t] !== 0){
+          solution[i][t] = false;
+        }
       }
       var z = i;
       var y = j;
-      while(solution[z] && solution[z][y]){
-        solution[z][y].canHold = false;
+      while(solution[z] !== undefined && solution[z][y] !== undefined){
+        if (solution[z][y] !== 0){
+          solution[z][y] = false;
+        }
         z++;
         y++;
       }
       z = i;
       y = j;
-      while(solution[z] && solution[z][y]){
-        solution[z][y].canHold = false;
+      while(solution[z] !== undefined && solution[z][y] !== undefined){
+        if (solution[z][y] !== 0){
+          solution[z][y] = false;
+        }
         z--;
         y++;
       }
       z = i;
       y = j;
-      while(solution[z] && solution[z][y]){
-        solution[z][y].canHold = false;
+      while(solution[z] !== undefined && solution[z][y] !== undefined){
+        if (solution[z][y] !== 0){
+          solution[z][y] = false;
+        }
         z++;
         y--;
       }
       z = i;
       y = j;
-      while(solution[z] && solution[z][y]){
-        solution[z][y].canHold = false;
+      while(solution[z] !== undefined && solution[z][y] !== undefined){
+        if (solution[z][y] !== 0){
+          solution[z][y] = false;
+        }
         z--;
         y--;
       }
@@ -85,13 +97,8 @@ window.findNQueensSolution = function(n){
 
 window.countNQueensSolutions = function(n){
   var board = makeBoard(n);
-  var memory = {};
   var someResults = searchForTheSolutions(board);
-  console.log(someResults);
-    _.each(someResults, function(value){
-      memory[JSON.stringify(value)] = value;
-    });
-  var solutionCount = _.size(memory);
+  var solutionCount = _.size(someResults);
   console.log('Number of solutions for ' + n + ' queens:', solutionCount);
 };
 
@@ -106,16 +113,11 @@ window.displayBoard = function(matrix){
   );
 };
 
-var Spot = function(){
-  this.hasQueen = false;
-  this.canHold = true;
-};
-
 var searchForTheSolutions = function(boardy){
-  var solutions = [];
+  var solutions = {};
   var recurse = function(board, count, openSpots){
-    if (count === board.length){
-      solutions.push(board);
+    if (count === board.length && !solutions[String(board)]){
+      solutions[String(board)] = board;
     }
     var boardClone = [];
     var countClone;
@@ -123,9 +125,7 @@ var searchForTheSolutions = function(boardy){
       for (var k =0; k < board.length; k++){
         boardClone[k] = [];
         for (var j = 0; j< board.length; j++){
-          boardClone[k][j] = new Spot();
-          boardClone[k][j].hasQueen = board[k][j].hasQueen;
-          boardClone[k][j].canHold = board[k][j].canHold;
+          boardClone[k][j] = board[k][j];
         }
       }
       countClone = count;
@@ -142,7 +142,7 @@ var findOpenSpots = function(board){
   var results = [];
   for(var i = 0; i < board.length; i++){
     for (var j = 0; j <board[0].length; j++){
-      if (board[i][j].canHold) { results.push([i,j]);}
+      if (board[i][j]) { results.push([i,j]);}
     }
   }
   return results;
