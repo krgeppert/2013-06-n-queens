@@ -21,8 +21,8 @@ window.countNRooksSolutions = function(n){
   return solutionCount;
 };
 
-var fillBoard = function(n){
-  var solution = [];
+var makeBoard = function(n){
+  solution = [];
   for (var i = 0; i < n; i++){
     solution.push([]);
     for (var j = 0; j < n; j++){
@@ -50,16 +50,22 @@ var plantAQueen = function(cords,solution){
         z++;
         y++;
       }
+      z = i;
+      y = j;
       while(solution[z] && solution[z][y]){
         solution[z][y].canHold = false;
         z--;
         y++;
       }
+      z = i;
+      y = j;
       while(solution[z] && solution[z][y]){
         solution[z][y].canHold = false;
         z++;
         y--;
       }
+      z = i;
+      y = j;
       while(solution[z] && solution[z][y]){
         solution[z][y].canHold = false;
         z--;
@@ -68,17 +74,25 @@ var plantAQueen = function(cords,solution){
     }
 };
 window.findNQueensSolution = function(n){
-  solution = fillBoard(n);
-  solution = findASolution(findOpenSpots(solution), solution, 0, n);
-  console.log('Single solution for ' + n + ' queens:', solution);
-  return solution;
+  // var solution = makeBoard(n);
+  // var startingPoints = findOpenSpots(solution);
+  // for (var i = 0; i < startingPoints.length; i++){
+  //   solution = makeBoard(n);
+  //   results = searchForTheSolutions(startingPoints[i], solution);
+  //   if (results) {console.log('Single solution for solutions for ' + n + ' queens:', results); return results;}
+  // }
 };
 
 window.countNQueensSolutions = function(n){
-  var solutionCount = 0; //fixme
-
+  var board = makeBoard(n);
+  var memory = {};
+  var someResults = searchForTheSolutions(board);
+  console.log(someResults);
+    _.each(someResults, function(value){
+      memory[JSON.stringify(value)] = value;
+    });
+  var solutionCount = _.size(memory);
   console.log('Number of solutions for ' + n + ' queens:', solutionCount);
-  return solutionCount;
 };
 
 
@@ -97,25 +111,31 @@ var Spot = function(){
   this.canHold = true;
 };
 
-var findASolution = function(openSpots, solution, numberOfQueens, targetNumberOfQueens){
-  var openSpotsClone = openSpots.slice();
-  var solutionClone = solution.slice();
-  var numberOfQueensClone = numberOfQueens;
-  var solutionFound = false;
-  if (openSpotsClone.length > 0) {
-    for(var i = 0; i < openSpotsClone.length; i++){
-      plantAQueen(openSpotsClone[i],solutionClone);
-      numberOfQueensClone++;
-      if (numberOfQueensClone === targetNumberOfQueens) {solutionFound = true;}
-      openSpotsClone = findOpenSpots(solutionClone);
-      if (solutionFound) {
-        return solutionClone;
-      } else {
-        var foo = findASolution(openSpotsClone, solutionClone, numberOfQueensClone, targetNumberOfQueens);
-         if (foo) {return foo;}
-      }
+var searchForTheSolutions = function(boardy){
+  var solutions = [];
+  var recurse = function(board, count, openSpots){
+    if (count === board.length){
+      solutions.push(board);
     }
-  }
+    var boardClone = [];
+    var countClone;
+    for (var i = 0; i < openSpots.length; i++){
+      for (var k =0; k < board.length; k++){
+        boardClone[k] = [];
+        for (var j = 0; j< board.length; j++){
+          boardClone[k][j] = new Spot();
+          boardClone[k][j].hasQueen = board[k][j].hasQueen;
+          boardClone[k][j].canHold = board[k][j].canHold;
+        }
+      }
+      countClone = count;
+      plantAQueen(openSpots[i], boardClone);
+      countClone++;
+      recurse(boardClone,countClone, findOpenSpots(boardClone));
+    }
+  };
+  recurse(boardy,0,findOpenSpots(boardy));
+  return solutions;
 };
 
 var findOpenSpots = function(board){
